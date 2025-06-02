@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Device Orientation Ball</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #222;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background: #fff;
+            touch-action: none;
+        }
+        #info {
+            color: #fff;
+            text-align: center;
+            font-family: sans-serif;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div id="info">Tilt your device to move the ball</div>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Resize canvas to fit window
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Ball properties
+        const ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 30,
+            color: '#3498db',
+            vx: 0,
+            vy: 0
+        };
+
+        // Sensitivity
+        const sensitivity = 0.2;
+
+        // Device orientation handler
+        function handleOrientation(event) {
+            // gamma: left-to-right tilt in degrees, range [-90,90]
+            // beta: front-to-back tilt in degrees, range [-180,180]
+            let gamma = event.gamma || 0; // x-axis
+            let beta = event.beta || 0;   // y-axis
+
+            // Update velocity based on tilt
+            ball.vx += gamma * sensitivity;
+            ball.vy += beta * sensitivity;
+        }
+
+        // Request permission for iOS 13+ devices
+        function requestOrientationPermission() {
+            if (typeof DeviceOrientationEvent !== 'undefined' &&
+                    typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(permissionState => {
+                        if (permissionState === 'granted') {
+                            window.addEventListener('deviceorientation', handleOrientation);
+                        } else {
+                            document.getElementById('info').textContent = 'Permission denied for device orientation.';
+                        }
+                    })
+                    .catch(() => {
+                        document.getElementById('info').textContent = 'Device orientation not supported.';
+                    });
+            } else {
+                window.addEventListener('deviceorientation', handleOrientation);
+            }
+        }
+
+        // On user gesture, request permission if needed
+        document.body.addEventListener('click', requestOrientationPermission, { once: true });
+        document.body.addEventListener('touchstart', requestOrientationPermission, { once: true });
+
+        // Animation loop
+        function draw() {
+            // Physics: friction
+            ball.vx *= 0.98;
+            ball.vy *= 0.98;
+
+            // Update position
+            ball.x += ball.vx * 0.05;
+            ball.y += ball.vy * 0.05;
+
+            // Boundaries
+            if (ball.x < ball.radius) {
+                ball.x = ball.radius;
+                ball.vx *= -0.5;
+            }
+            if (ball.x > canvas.width - ball.radius) {
+                ball.x = canvas.width - ball.radius;
+                ball.vx *= -0.5;
+            }
+            if (ball.y < ball.radius) {
+                ball.y = ball.radius;
+                ball.vy *= -0.5;
+            }
+            if (ball.y > canvas.height - ball.radius) {
+                ball.y = canvas.height - ball.radius;
+                ball.vy *= -0.5;
+            }
+
+            // Clear and draw
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = ball.color;
+            ctx.shadowColor = '#2980b9';
+            ctx.shadowBlur = 20;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            requestAnimationFrame(draw);
+        }
+
+        draw();
+    </script>
+</body>
+</html>

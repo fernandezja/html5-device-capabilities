@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Left or Right Orientation Detection</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+        #status { font-size: 2em; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Device Left/Right Detection</h1>
+    <div id="status">Waiting for orientation...</div>
+    <script>
+        function handleOrientation(event) {
+            // gamma: left/right tilt in degrees, range [-90,90]
+            const gamma = event.gamma;
+            let status = "Unknown";
+
+            if (gamma > 20) {
+                status = "Right Side Down";
+            } else if (gamma < -20) {
+                status = "Left Side Down";
+            } else {
+                status = "Flat or Upright";
+            }
+
+            document.getElementById('status').textContent = status;
+        }
+
+        if (window.DeviceOrientationEvent) {
+            window.addEventListener('deviceorientation', handleOrientation, true);
+        } else {
+            document.getElementById('status').textContent = "DeviceOrientation not supported.";
+        }
+    </script>
+</body>
+</html>
