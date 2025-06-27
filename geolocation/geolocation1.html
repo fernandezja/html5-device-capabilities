@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Geolocation Demo 1</title>
+    <style>
+        label { display: block; margin: 8px 0 4px; }
+        span { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>Geolocation Demo 1</h2>
+    <button onclick="getLocation()">Detect Current Position</button>
+    <div id="geoData" style="margin-top:20px;">
+        <label>Latitude: <span id="lat">-</span></label>
+        <label>Longitude: <span id="lon">-</span></label>
+        <label>Accuracy (meters): <span id="acc">-</span></label>
+        <label>Altitude: <span id="alt">-</span></label>
+        <label>Altitude Accuracy: <span id="altacc">-</span></label>
+        <label>Heading: <span id="head">-</span></label>
+        <label>Speed: <span id="speed">-</span></label>
+    </div>
+    <script>
+        function getLocation() {
+            if (!navigator.geolocation) {
+                alert('Geolocation is not supported by your browser.');
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(showPosition, showError);
+        }
+
+        function showPosition(position) {
+            document.getElementById('lat').textContent = position.coords.latitude;
+            document.getElementById('lon').textContent = position.coords.longitude;
+            document.getElementById('acc').textContent = position.coords.accuracy;
+            document.getElementById('alt').textContent = position.coords.altitude !== null ? position.coords.altitude : 'N/A';
+            document.getElementById('altacc').textContent = position.coords.altitudeAccuracy !== null ? position.coords.altitudeAccuracy : 'N/A';
+            document.getElementById('head').textContent = position.coords.heading !== null ? position.coords.heading : 'N/A';
+            document.getElementById('speed').textContent = position.coords.speed !== null ? position.coords.speed : 'N/A';
+        }
+
+        function showError(error) {
+            let msg = '';
+            switch(error.code) {
+                case error.PERMISSION_DENIED: msg = "User denied the request for Geolocation."; break;
+                case error.POSITION_UNAVAILABLE: msg = "Location information is unavailable."; break;
+                case error.TIMEOUT: msg = "The request to get user location timed out."; break;
+                default: msg = "An unknown error occurred.";
+            }
+            alert(msg);
+        }
+    </script>
+</body>
+</html>
